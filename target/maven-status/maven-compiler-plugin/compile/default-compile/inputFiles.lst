@@ -1,0 +1,17 @@
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/Main.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/datamanager/EmployeeDataManager.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/filereader/DataLoader.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/filereader/EmployeeWriter.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/gui/EmployeeDetailView.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/gui/EmployeeListView.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/gui/EmployeeManagementPanel.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/gui/NewEmployeeForm.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/gui/SalaryCalculationDialog.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/gui/Theme.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/model/CompensationComponents.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/model/Employee.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/model/PayrollCalculationService.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/model/PayrollCalculator.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/model/PayrollSystem.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/model/SalaryCalculationResult.java
+/Users/jude/Documents/oop/motorph/src/main/java/com/group/motorph/model/TimeLog.java
