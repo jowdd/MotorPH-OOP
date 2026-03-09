@@ -1,224 +1,228 @@
 package com.group.motorph.model;
 
+import java.time.LocalDate;
 
-/** Represents an employee with personal information and compensation details.
-
-* The class enforces basic validation rules to ensure data integrity,
-* such as preventing null or empty required fields and disallowing
-* negative monetary values.
-**/
+/**
+ * All employee types inherit from this base class
+ */
+public abstract class Employee {
+    private String employeeId;
+    private String lastName;
+    private String firstName;
+    private LocalDate birthday;
+    private String address;
+    private String phoneNumber;
+    private String sssNum;
+    private String philhealthNum;
+    private String tinNum;
+    private String pagibigNum;
+    private String status;
+    private String position;
+    private String immediateSupervisor;
+    private double basicSalary;
+    private double riceSubsidy;
+    private double phoneAllowance;
+    private double clothingAllowance;
+    private double grossSemiMonthly;
+    private double hourlyRate;
     
-public class Employee {
-
-    private final String employeeNumber;            // Unique identifier assigned to the employee (immutable).
-    private String position;                        // Employee's job position or title.
-    private String lastName;                        // Employee's last name
-    private String firstName;                       // Employee's first name
-    private CompensationComponents compensation;    // Encapsulated compensation components.
-    private String sssNumber;                       // Employee's SSS number
-    private String philhealthNumber;                // Employee's PhilHealth number
-    private String pagibigNumber;                   // Employee's Pag-IBIG number
-    private String tinNumber;                       // Employee's TIN number
-
-    /**
-     * @param employeeNumber unique employee identifier
-     * @param position employee job position
-     * @param lastName employee last name
-     * @param firstName employee first name
-     * @param basicSalary base monthly salary
-     * @param sssNumber SSS identification number
-     * @param philhealthNumber PhilHealth identification number
-     * @param pagibigNumber Pag-IBIG identification number
-     * @param tinNumber tax identification number
-     * @param riceSubsidy monthly rice subsidy allowance
-     * @param phoneAllowance monthly phone allowance
-     * @param clothingAllowance monthly clothing allowance
-     */
-    public Employee(String employeeNumber, String position, String lastName, String firstName,
-            double basicSalary, String sssNumber, String philhealthNumber,
-            String pagibigNumber, String tinNumber, double riceSubsidy, double phoneAllowance,
-            double clothingAllowance) {
-        this.employeeNumber = validateRequired(employeeNumber, "Employee Number");
-        this.lastName = validateRequired(lastName, "Last Name");
-        this.firstName = validateRequired(firstName, "First Name");
-        this.compensation = new CompensationComponents(basicSalary, riceSubsidy,
-                phoneAllowance, clothingAllowance);
-        this.sssNumber = validateRequired(sssNumber, "SSS Number");
-        this.philhealthNumber = validateRequired(philhealthNumber, "PhilHealth Number");
-        this.pagibigNumber = validateRequired(pagibigNumber, "Pag-IBIG Number");
-        this.tinNumber = validateRequired(tinNumber, "TIN Number");
-        this.position = validateRequired(position, "Position");
+    // Default Constructor
+    public Employee() {
     }
 
-    /**
-     * Validates that a required string field is neither null nor empty.
-     *
-     * @param value the value to validate
-     * @param fieldName human-readable field name for error messages
-     * @return trimmed string value if valid
-     * @throws IllegalArgumentException if the value is null or empty
-     */
-    private String validateRequired(String value, String fieldName) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
-        }
-        return value.trim();
+    // Constructor with basic information
+    public Employee(String employeeId, String lastName, String firstName, LocalDate birthday, String address, 
+                    String phoneNumber, String sssNum, String philhealthNum, String tinNum, String pagibigNum,
+                    String status, String position, String immediateSupervisor, double basicSalary, 
+                    double riceSubsidy, double phoneAllowance, double clothingAllowance,
+                    double grossSemiMonthly, double hourlyRate) {
+        this.employeeId = employeeId;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.birthday = birthday;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+        this.sssNum = sssNum;
+        this.philhealthNum = philhealthNum;
+        this.tinNum = tinNum;
+        this.pagibigNum = pagibigNum;
+        this.status = status;
+        this.position = position;
+        this.immediateSupervisor = immediateSupervisor;
+        this.basicSalary = basicSalary;
+        this.riceSubsidy = riceSubsidy;
+        this.phoneAllowance = phoneAllowance;
+        this.clothingAllowance = clothingAllowance;
+        this.grossSemiMonthly = grossSemiMonthly;
+        this.hourlyRate = hourlyRate;
     }
-
-    /**
-     * Getters for employee fields.
-     */
-    public String getEmployeeNumber() {
-        return employeeNumber;
+    
+    // Getters and Setters
+    public String getEmployeeId() {
+        return employeeId;
     }
-
+    
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
+    
     public String getLastName() {
         return lastName;
+    }
+    
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getFirstName() {
         return firstName;
     }
-
-    public double getBasicSalary() {
-        return compensation.getBasicSalary();
+    
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getSssNumber() {
-        return sssNumber;
+    public LocalDate getBirthday() {
+        return birthday;
     }
 
-    public String getPhilhealthNumber() {
-        return philhealthNumber;
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
     }
 
-    public String getPagibigNumber() {
-        return pagibigNumber;
+    public String getAddress() {
+        return address;
     }
 
-    public String getTinNumber() {
-        return tinNumber;
+    public void setAddress(String address) {
+        this.address = address;
+    }
+    
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+    
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+    
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    
+    public String getSssNum() {
+        return sssNum;
+    }
+    
+    public void setSssNum(String sssNum) {
+        this.sssNum = sssNum;
+    }
+    
+    public String getPhilhealthNum() {
+        return philhealthNum;
+    }
+    
+    public void setPhilhealthNum(String philhealthNum) {
+        this.philhealthNum = philhealthNum;
+    }
+    
+    public String getTinNum() {
+        return tinNum;
+    }
+    
+    public void setTinNum(String tinNum) {
+        this.tinNum = tinNum;
+    }
+    
+    public String getPagibigNum() {
+        return pagibigNum;
+    }
+    
+    public void setPagibigNum(String pagibigNum) {
+        this.pagibigNum = pagibigNum;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getPosition() {
         return position;
     }
-
-    public double getRiceSubsidy() {
-        return compensation.getRiceSubsidy();
-    }
-
-    public double getPhoneAllowance() {
-        return compensation.getPhoneAllowance();
-    }
-
-    public double getClothingAllowance() {
-        return compensation.getClothingAllowance();
-    }
-
-    /**
-     * Returns the encapsulated compensation components.
-     *
-     * @return {@link CompensationComponents} instance
-     */
-    public CompensationComponents getCompensation() {
-        return compensation;
-    }
-
-    /**
-     * Setters for mutable fields.
-     */
-    public void setLastName(String lastName) {
-        this.lastName = validateRequired(lastName, "Last Name");
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = validateRequired(firstName, "First Name");
-    }
-
-    /**
-     * @param basicSalary new basic salary amount
-     * @throws IllegalArgumentException if the salary is negative
-     */
-    public void setBasicSalary(double basicSalary) {
-        if (basicSalary < 0) {
-            throw new IllegalArgumentException("Basic salary cannot be negative");
-        }
-        this.compensation = new CompensationComponents(basicSalary,
-                compensation.getRiceSubsidy(),
-                compensation.getPhoneAllowance(),
-                compensation.getClothingAllowance());
-    }
-
-    public void setSssNumber(String sssNumber) {
-        this.sssNumber = validateRequired(sssNumber, "SSS Number");
-    }
-
-    public void setPhilhealthNumber(String philhealthNumber) {
-        this.philhealthNumber = validateRequired(philhealthNumber, "PhilHealth Number");
-    }
-
-    public void setPagibigNumber(String pagibigNumber) {
-        this.pagibigNumber = validateRequired(pagibigNumber, "Pag-IBIG Number");
-    }
-
-    public void setTinNumber(String tinNumber) {
-        this.tinNumber = validateRequired(tinNumber, "TIN Number");
-    }
-
+    
     public void setPosition(String position) {
-        this.position = validateRequired(position, "Position");
+        this.position = position;
+    }
+    
+    public String getImmediateSupervisor() {
+        return immediateSupervisor;
+    }
+    
+    public void setImmediateSupervisor(String immediateSupervisor) {
+        this.immediateSupervisor = immediateSupervisor;
     }
 
-    /**
-     * @param riceSubsidy new rice subsidy amount
-     * @throws IllegalArgumentException if the value is negative
-     */
+    public double getBasicSalary() {
+        return basicSalary;
+    }
+    
+    public void setBasicSalary(double basicSalary) {
+        this.basicSalary = basicSalary;
+    }
+    
+    public double getRiceSubsidy() {
+        return riceSubsidy;
+    }
+    
     public void setRiceSubsidy(double riceSubsidy) {
-        if (riceSubsidy < 0) {
-            throw new IllegalArgumentException("Rice subsidy cannot be negative");
-        }
-        this.compensation = new CompensationComponents(compensation.getBasicSalary(),
-                riceSubsidy,
-                compensation.getPhoneAllowance(),
-                compensation.getClothingAllowance());
+        this.riceSubsidy = riceSubsidy;
     }
-
-    /**
-     * @param phoneAllowance new phone allowance amount
-     * @throws IllegalArgumentException if the value is negative
-     */
+    
+    public double getPhoneAllowance() {
+        return phoneAllowance;
+    }
+    
     public void setPhoneAllowance(double phoneAllowance) {
-        if (phoneAllowance < 0) {
-            throw new IllegalArgumentException("Phone allowance cannot be negative");
-        }
-        this.compensation = new CompensationComponents(compensation.getBasicSalary(),
-                compensation.getRiceSubsidy(),
-                phoneAllowance,
-                compensation.getClothingAllowance());
+        this.phoneAllowance = phoneAllowance;
     }
-
-    /**
-     * @param clothingAllowance new clothing allowance amount
-     * @throws IllegalArgumentException if the value is negative
-     */
+    
+    public double getClothingAllowance() {
+        return clothingAllowance;
+    }
+    
     public void setClothingAllowance(double clothingAllowance) {
-        if (clothingAllowance < 0) {
-            throw new IllegalArgumentException("Clothing allowance cannot be negative");
-        }
-        this.compensation = new CompensationComponents(compensation.getBasicSalary(),
-                compensation.getRiceSubsidy(),
-                compensation.getPhoneAllowance(),
-                clothingAllowance);
+        this.clothingAllowance = clothingAllowance;
     }
-
+    
+    public double getGrossSemiMonthly() {
+        return grossSemiMonthly;
+    }
+    
+    public void setGrossSemiMonthly(double grossSemiMonthly) {
+        this.grossSemiMonthly = grossSemiMonthly;
+    }
+    
+    public double getHourlyRate() {
+        return hourlyRate;
+    }
+    
+    public void setHourlyRate(double hourlyRate) {
+        this.hourlyRate = hourlyRate;
+    }
+    
     /**
-     * Returns a concise string representation of the employee,
-     * useful for logging and debugging.
+     * Abstract method to get employee type
+     * Must be implemented by all subclasses
+     * @return the type of employee
      */
+    public abstract String getEmployeeType();
+    
     @Override
     public String toString() {
-        return String.format("Employee{id=%s, name=%s %s, position=%s}",
-                employeeNumber, firstName, lastName, position);
+        return employeeId + " - " + getFullName() + " (" + position + ")";
     }
 }
