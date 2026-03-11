@@ -1,0 +1,6 @@
+Username,Password,Role,EmployeeID
+admin,admin123,ADMIN,10001
+hr1,password,HR,10006
+finance1,password,FINANCE,10011
+employee1,password,EMPLOYEE,10008
+it1,password,IT,10005
