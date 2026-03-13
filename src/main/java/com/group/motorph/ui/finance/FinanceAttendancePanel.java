@@ -375,6 +375,15 @@ public class FinanceAttendancePanel extends JPanel {
             return;
         }
 
+        // Fetch the original attendance record to preserve employee name fields
+        final AttendanceRecord[] originalRecordHolder = {null};
+        for (AttendanceRecord r : attendanceService.getAttendanceByEmployeeAndMonth(empId, date.getMonthValue(), date.getYear())) {
+            if (r.getDate().isEqual(date)) {
+                originalRecordHolder[0] = r;
+                break;
+            }
+        }
+
         LocalTime parsedIn = tryParseTime(inStr);
         LocalTime parsedOut = tryParseTime(outStr);
 
@@ -505,6 +514,11 @@ public class FinanceAttendancePanel extends JPanel {
             }
             AttendanceRecord updated = new AttendanceRecord();
             updated.setEmployeeId(empId);
+            // Preserve the original employee name fields
+            if (originalRecordHolder[0] != null) {
+                updated.setLastName(originalRecordHolder[0].getLastName());
+                updated.setFirstName(originalRecordHolder[0].getFirstName());
+            }
             updated.setDate(selectedDate[0]);
             updated.setClockIn(clockIn);
             updated.setClockOut(clockOut);
