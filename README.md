@@ -8,7 +8,7 @@ The MotorPH Payroll System is a desktop application for managing employee record
 
 - **Purpose:** Centralize HR and payroll workflows in one system.
 - **Problem it solves:** Reduces manual tracking of attendance, leave, and salary computation.
-- **Intended users:** HR staff, Finance staff, IT admins, and employees.
+- **Intended users:** HR staff, Finance staff, IT, Amdins, and Employees.
 
 ## 🚀 Features
 
@@ -52,16 +52,6 @@ The system is seeded with these usernames in `resources/users.csv`:
 - **Employee**
 	- Access to personal DTR, leave application, and own payslip.
 
-
-## ⚙️ How to Run the Application
-
-1. **Clone or download** this repository.
-2. Open the project in your IDE (e.g., IntelliJ or VS Code with Java support).
-3. Ensure **JDK 21** is installed and configured.
-4. Build/compile the project (Maven or IDE build).
-5. Run the main class: `com.group.motorph.Main`.
-6. Sign in using one of the test accounts above (e.g., username `admin`, password `password`).
-
 ## 📋 Application Module Overview
 
 - **Login Screen**
@@ -78,6 +68,15 @@ The system is seeded with these usernames in `resources/users.csv`:
 	- Create, edit, and delete user accounts with role assignment.
 - **Daily Time Record**
 	- View attendance entries and computed summaries (late, overtime, worked time).
+
+## ⚙️ How to Run the Application
+
+1. **Clone or download** this repository.
+2. Open the project in your IDE (e.g., IntelliJ or VS Code with Java support).
+3. Ensure **JDK 21** is installed and configured.
+4. Build/compile the project (Maven or IDE build).
+5. Run the main class: `com.group.motorph.Main`.
+6. Sign in using one of the test accounts above (e.g., username `admin`, password `password`).
 
 ## 💻 Technologies Used
 
