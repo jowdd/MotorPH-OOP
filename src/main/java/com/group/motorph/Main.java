@@ -3,7 +3,7 @@ package com.group.motorph;
 import javax.swing.SwingUtilities;
 
 import com.group.motorph.ui.LoginFrame;
-import com.group.motorph.ui.UITheme;
+import com.group.motorph.ui.components.UITheme;
 
 public class Main {
     public static void main(String[] args) {

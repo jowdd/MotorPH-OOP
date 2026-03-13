@@ -7,6 +7,11 @@ import com.group.motorph.dao.AttendanceDAO;
 import com.group.motorph.dao.impl.AttendanceDAOImpl;
 import com.group.motorph.model.AttendanceRecord;
 
+/**
+ * Service for attendance record operations. Delegates directly to
+ * AttendanceDAO; business logic lives in PayrollService and
+ * AttendanceApprovalService.
+ */
 public class AttendanceService {
 
     private final AttendanceDAO attendanceDAO;
@@ -15,17 +20,72 @@ public class AttendanceService {
         this.attendanceDAO = new AttendanceDAOImpl();
     }
 
-    public List<AttendanceRecord> getAllAttendance() { return attendanceDAO.getAllAttendance(); }
+    /**
+     * Returns every attendance record across all employees.
+     */
+    public List<AttendanceRecord> getAllAttendance() {
+        return attendanceDAO.getAllAttendance();
+    }
 
-    public List<AttendanceRecord> getAttendanceByEmployee(String employeeId) { return attendanceDAO.getAttendanceByEmployeeId(employeeId); }
+    /**
+     * Returns all attendance records for a specific employee.
+     */
+    public List<AttendanceRecord> getAttendanceByEmployee(String employeeId) {
+        return attendanceDAO.getAttendanceByEmployeeId(employeeId);
+    }
 
-    public List<AttendanceRecord> getAttendanceByEmployeeAndMonth(String employeeId, int month, int year) { return attendanceDAO.getAttendanceByEmployeeAndMonth(employeeId, month, year); }
+    /**
+     * Returns attendance records for an employee filtered to a specific month
+     * and year.
+     */
+    public List<AttendanceRecord> getAttendanceByEmployeeAndMonth(String employeeId, int month, int year) {
+        return attendanceDAO.getAttendanceByEmployeeAndMonth(employeeId, month, year);
+    }
 
-    public List<AttendanceRecord> getPendingAttendanceByMonth(int month, int year) { return attendanceDAO.getPendingAttendanceByMonth(month, year); }
+    /**
+     * Returns all non-approved records for a given month — used by Finance
+     * before approval.
+     */
+    public List<AttendanceRecord> getPendingAttendanceByMonth(int month, int year) {
+        return attendanceDAO.getPendingAttendanceByMonth(month, year);
+    }
 
-    public boolean addAttendanceRecord(AttendanceRecord record) { return attendanceDAO.addAttendanceRecord(record); }
+    /**
+     * Adds a new attendance record to the CSV.
+     */
+    public boolean addAttendanceRecord(AttendanceRecord record) {
+        return attendanceDAO.addAttendanceRecord(record);
+    }
 
-    public boolean updateAttendanceRecord(String employeeId, LocalDate oldDate, AttendanceRecord updated) { return attendanceDAO.updateAttendanceRecord(employeeId, oldDate, updated); }
+    /**
+     * Updates a specific attendance record identified by employee ID and
+     * original date. oldDate is needed because the date itself may be changed
+     * in the edit.
+     */
+    public boolean updateAttendanceRecord(String employeeId, LocalDate oldDate, AttendanceRecord updated) {
+        return attendanceDAO.updateAttendanceRecord(employeeId, oldDate, updated);
+    }
 
-    public boolean deleteAttendanceRecord(String employeeId, LocalDate date) { return attendanceDAO.deleteAttendanceRecord(employeeId, date); }
+    /**
+     * Removes the attendance record for the given employee on the given date.
+     */
+    public boolean deleteAttendanceRecord(String employeeId, LocalDate date) {
+        return attendanceDAO.deleteAttendanceRecord(employeeId, date);
+    }
+
+    /**
+     * Returns only Approved records for a month — used during payroll
+     * processing.
+     */
+    public List<AttendanceRecord> getApprovedByMonth(int month, int year) {
+        return attendanceDAO.getApprovedByMonth(month, year);
+    }
+
+    /**
+     * Stamps Approved records for the month as Processed after payroll
+     * generation.
+     */
+    public boolean markAttendanceProcessed(int month, int year) {
+        return attendanceDAO.markAttendanceProcessed(month, year);
+    }
 }

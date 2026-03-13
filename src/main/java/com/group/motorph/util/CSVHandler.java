@@ -11,28 +11,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class for delimited-file operations.
- *
- * This helper supports BOTH CSV and TSV while keeping the existing CSV method
+ * Utility class for delimited-file operations. This helper supports BOTH CSV
+ * and TSV formats
  */
 public class CSVHandler {
-    
-    /**
-     * Read all lines from a CSV file
-     * @param filePath path to CSV file
-     * @return List of string arrays, each representing a row
-     */
+
+    // Read all lines from a CSV file
     public static List<String[]> readCSV(String filePath) {
         return readDelimited(filePath, ',', true);
     }
 
-    /**
-     * Read all lines from a delimited file (CSV/TSV).
-     * @param filePath path to file
-     * @param delimiter delimiter (',' for CSV, '\t' for TSV)
-     * @param skipHeader whether to skip the first line
-     * @return List of string arrays, each representing a row
-     */
+    // Read all lines from a delimited file (CSV/TSV).
     public static List<String[]> readDelimited(String filePath, char delimiter, boolean skipHeader) {
         List<String[]> data = new ArrayList<>();
 
@@ -46,7 +35,9 @@ public class CSVHandler {
                     continue;
                 }
                 isFirstLine = false;
-                if (line.isEmpty()) continue;
+                if (line.isEmpty()) {
+                    continue;
+                }
 
                 String[] values = split(line, delimiter);
                 data.add(values);
@@ -61,21 +52,12 @@ public class CSVHandler {
         return data;
     }
 
-    /**
-     * Read a file and auto-detect delimiter based on extension.
-     * - .tsv => tab
-     * - otherwise => comma
-     */
+    // Read a file and auto-detect delimiter based on extension. - .tsv => tab
     public static List<String[]> readAuto(String filePath) {
         return readDelimited(filePath, delimiterForPath(filePath), true);
     }
-    
-    /**
-     * Write data to a CSV file
-     * @param filePath path to CSV file
-     * @param headers column headers
-     * @param data list of data rows
-     */
+
+    // Write data to a CSV file
     public static void writeCSV(String filePath, String[] headers, List<String[]> data) {
         writeDelimited(filePath, headers, data, ',');
     }
@@ -94,18 +76,12 @@ public class CSVHandler {
         }
     }
 
-    /**
-     * Write a file and auto-select delimiter based on extension.
-     */
+    // Write a file and auto-select delimiter based on extension.
     public static void writeAuto(String filePath, String[] headers, List<String[]> data) {
         writeDelimited(filePath, headers, data, delimiterForPath(filePath));
     }
-    
-    /**
-     * Append a row to CSV file
-     * @param filePath path to CSV file
-     * @param data row data to append
-     */
+
+    // Append a row to CSV file
     public static void appendToCSV(String filePath, String[] data) {
         appendDelimited(filePath, data, ',');
     }
@@ -122,11 +98,8 @@ public class CSVHandler {
     public static void appendAuto(String filePath, String[] data) {
         appendDelimited(filePath, data, delimiterForPath(filePath));
     }
-    
-    /**
-     * Create an empty file with directory structure
-     * @param filePath path to file
-     */
+
+    // Create an empty file with directory structure
     private static void createEmptyFile(String filePath) {
         try {
             File file = new File(filePath);
@@ -136,18 +109,13 @@ public class CSVHandler {
             System.err.println("Error creating file: " + e.getMessage());
         }
     }
-    
-    /**
-     * Get the data directory path
-     * @return path to data directory
-     */
+
+    // Get the data directory path
     public static String getDataDirectory() {
         return "resources/";
     }
-    
-    /**
-     * Ensure data directory exists
-     */
+
+    // Ensure data directory exists
     public static void ensureDataDirectory() {
         File directory = new File(getDataDirectory());
         if (!directory.exists()) {
@@ -156,7 +124,9 @@ public class CSVHandler {
     }
 
     private static char delimiterForPath(String filePath) {
-        if (filePath == null) return ',';
+        if (filePath == null) {
+            return ',';
+        }
         String lower = filePath.toLowerCase();
         return lower.endsWith(".tsv") ? '\t' : ',';
     }

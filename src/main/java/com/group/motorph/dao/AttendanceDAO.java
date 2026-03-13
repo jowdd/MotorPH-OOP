@@ -9,6 +9,7 @@ import com.group.motorph.model.AttendanceRecord;
  * Interface for Attendance data access operations.
  */
 public interface AttendanceDAO {
+
     List<AttendanceRecord> getAllAttendance();
 
     List<AttendanceRecord> getAttendanceByEmployeeId(String employeeId);
@@ -26,6 +27,10 @@ public interface AttendanceDAO {
     boolean deleteAttendanceRecord(String employeeId, LocalDate date);
 
     boolean markAttendanceApproved(int month, int year);
+
+    List<AttendanceRecord> getApprovedByMonth(int month, int year);
+
+    boolean markAttendanceProcessed(int month, int year);
 
     void ensureStatusColumn();
 }

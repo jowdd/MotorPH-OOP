@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,13 +13,19 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import com.group.motorph.model.User;
-import com.group.motorph.service.AuthenticationService;
+import com.group.motorph.ui.components.DialogUtil;
+import com.group.motorph.ui.components.UITheme;
+import com.group.motorph.ui.employee.EmployeeDailyTimeRecordPanel;
+import com.group.motorph.ui.employee.EmployeeLeaveApplicationPanel;
+import com.group.motorph.ui.employee.EmployeePayslipsPanel;
+import com.group.motorph.ui.finance.FinancePanel;
+import com.group.motorph.ui.hr.HRPanel;
+import com.group.motorph.ui.it.ITPanel;
 
 public class MainFrame extends JFrame {
 
@@ -31,7 +35,7 @@ public class MainFrame extends JFrame {
 
     public MainFrame(User user) {
         this.user = user;
-        setTitle("MotorPH Payroll System - " + user.getRole().toUpperCase());
+        setTitle("MotorPH");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1100, 680);
         setLocationRelativeTo(null);
@@ -40,7 +44,7 @@ public class MainFrame extends JFrame {
     }
 
     private void buildUI() {
-        // ── Top header bar (full width, above sidebar + content) ──────────
+        //Top header bar
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 52));
@@ -54,7 +58,7 @@ public class MainFrame extends JFrame {
         header.add(brandLbl, BorderLayout.WEST);
         add(header, BorderLayout.NORTH);
 
-        // ── Body panel (sidebar | content), placed below the header ───
+        // Body panel, placed below the header
         JPanel body = new JPanel(new BorderLayout());
         body.add(buildSidebar(), BorderLayout.WEST);
 
@@ -63,9 +67,17 @@ public class MainFrame extends JFrame {
         body.add(contentArea, BorderLayout.CENTER);
         add(body, BorderLayout.CENTER);
 
-        showWelcome();
+        // Show Daily Time Record as the default landing page
+        show(new EmployeeDailyTimeRecordPanel(user));
     }
 
+    /**
+     * Builds the left navigation based on the logged-in user's role.
+     *
+     * Admin is treated as a superset role, so the boolean flags below allow the
+     * same routing code to reuse employee/HR/finance/IT modules while still
+     * exposing the admin-only combination of all pages.
+     */
     private JPanel buildSidebar() {
         JPanel sidebar = new JPanel();
         sidebar.setBackground(UITheme.SIDEBAR_BG);
@@ -77,52 +89,52 @@ public class MainFrame extends JFrame {
 
         String role = user.getRole().toUpperCase();
 
-        boolean isAdmin    = "ADMIN".equals(role);
-        boolean isHR       = "HR".equals(role) || isAdmin;
-        boolean isFinance  = "FINANCE".equals(role) || isAdmin;
-        boolean isIT       = "IT".equals(role) || isAdmin;
+        boolean isAdmin = "ADMIN".equals(role);
+        boolean isHR = "HR".equals(role) || isAdmin;
+        boolean isFinance = "FINANCE".equals(role) || isAdmin;
+        boolean isIT = "IT".equals(role) || isAdmin;
         boolean isEmployee = "EMPLOYEE".equals(role) || isAdmin;
 
         if (isHR && !isFinance) {
-            sidebar.add(navBtn("Daily Time Record",   () -> show(new EmployeeDailyTimeRecordPanel(user))));
-            sidebar.add(navBtn("Leave Application",   () -> show(new EmployeeLeaveApplicationPanel(user))));
-            sidebar.add(navBtn("Payslips",            () -> show(new EmployeePayslipsPanel(user))));
+            sidebar.add(navBtn("Daily Time Record", () -> show(new EmployeeDailyTimeRecordPanel(user))));
+            sidebar.add(navBtn("Leave Application", () -> show(new EmployeeLeaveApplicationPanel(user))));
+            sidebar.add(navBtn("My Payslip", () -> show(new EmployeePayslipsPanel(user))));
             sidebar.add(navBtn("Employee Management", () -> show(new HRPanel(user, "employees"))));
-            sidebar.add(navBtn("Leave Management",    () -> show(new HRPanel(user, "leaves"))));
+            sidebar.add(navBtn("Leave Management", () -> show(new HRPanel(user, "leaves"))));
         }
 
         if (isFinance && !isAdmin) {
-            // Finance sidebar order: DTR, Leave Application, Payslips, Attendance Logs, Payroll Management
-            sidebar.add(navBtn("Daily Time Record",  () -> show(new EmployeeDailyTimeRecordPanel(user))));
-            sidebar.add(navBtn("Leave Application",  () -> show(new EmployeeLeaveApplicationPanel(user))));
-            sidebar.add(navBtn("Payslips",           () -> show(new EmployeePayslipsPanel(user))));
-            sidebar.add(navBtn("Attendance Logs",    () -> show(new FinancePanel(user, "attendance"))));
-            sidebar.add(navBtn("Payroll Management", () -> show(new FinancePanel(user, "payroll"))));
+            // Finance sidebar order: DTR, Leave Application, My Payslip, Payroll Management, Employees Payslips
+            sidebar.add(navBtn("Daily Time Record", () -> show(new EmployeeDailyTimeRecordPanel(user))));
+            sidebar.add(navBtn("Leave Application", () -> show(new EmployeeLeaveApplicationPanel(user))));
+            sidebar.add(navBtn("My Payslip", () -> show(new EmployeePayslipsPanel(user))));
+            sidebar.add(navBtn("Payroll Management", () -> show(new FinancePanel(user, "attendance"))));
+            sidebar.add(navBtn("Employees Payslips", () -> show(new FinancePanel(user, "allpayslips"))));
         }
 
         if (isAdmin) {
             // Admin sees full access in the requested order
-            sidebar.add(navBtn("Daily Time Record",   () -> show(new EmployeeDailyTimeRecordPanel(user))));
-            sidebar.add(navBtn("Leave Application",   () -> show(new EmployeeLeaveApplicationPanel(user))));
-            sidebar.add(navBtn("Payslips",            () -> show(new EmployeePayslipsPanel(user))));
-            sidebar.add(navBtn("Attendance Logs",     () -> show(new FinancePanel(user, "attendance"))));
-            sidebar.add(navBtn("Payroll Management",  () -> show(new FinancePanel(user, "payroll"))));
+            sidebar.add(navBtn("Daily Time Record", () -> show(new EmployeeDailyTimeRecordPanel(user))));
+            sidebar.add(navBtn("Leave Application", () -> show(new EmployeeLeaveApplicationPanel(user))));
+            sidebar.add(navBtn("My Payslip", () -> show(new EmployeePayslipsPanel(user))));
+            sidebar.add(navBtn("Payroll Management", () -> show(new FinancePanel(user, "attendance"))));
+            sidebar.add(navBtn("Employees Payslips", () -> show(new FinancePanel(user, "allpayslips"))));
             sidebar.add(navBtn("Employee Management", () -> show(new HRPanel(user, "employees"))));
-            sidebar.add(navBtn("Leave Management",    () -> show(new HRPanel(user, "leaves"))));
-            sidebar.add(navBtn("User Management",     () -> show(new ITPanel(user, "users"))));
+            sidebar.add(navBtn("Leave Management", () -> show(new HRPanel(user, "leaves"))));
+            sidebar.add(navBtn("User Management", () -> show(new ITPanel(user, "users"))));
         }
 
         if (isIT && !isAdmin) {
-            sidebar.add(navBtn("Daily Time Record",  () -> show(new EmployeeDailyTimeRecordPanel(user))));
-            sidebar.add(navBtn("Leave Application",  () -> show(new EmployeeLeaveApplicationPanel(user))));
-            sidebar.add(navBtn("Payslips",           () -> show(new EmployeePayslipsPanel(user))));
-            sidebar.add(navBtn("User Management",    () -> show(new ITPanel(user, "users"))));
+            sidebar.add(navBtn("Daily Time Record", () -> show(new EmployeeDailyTimeRecordPanel(user))));
+            sidebar.add(navBtn("Leave Application", () -> show(new EmployeeLeaveApplicationPanel(user))));
+            sidebar.add(navBtn("My Payslip", () -> show(new EmployeePayslipsPanel(user))));
+            sidebar.add(navBtn("User Management", () -> show(new ITPanel(user, "users"))));
         }
 
         if (isEmployee && !isHR && !isFinance && !isIT && !isAdmin) {
             sidebar.add(navBtn("Daily Time Record", () -> show(new EmployeeDailyTimeRecordPanel(user))));
             sidebar.add(navBtn("Leave Application", () -> show(new EmployeeLeaveApplicationPanel(user))));
-            sidebar.add(navBtn("Payslips", () -> show(new EmployeePayslipsPanel(user))));
+            sidebar.add(navBtn("My Payslip", () -> show(new EmployeePayslipsPanel(user))));
         }
 
         sidebar.add(Box.createVerticalGlue());
@@ -162,49 +174,8 @@ public class MainFrame extends JFrame {
         contentArea.repaint();
     }
 
-    private void showWelcome() {
-        JPanel wrap = new JPanel(new GridBagLayout());
-        wrap.setBackground(UITheme.BACKGROUND);
-
-        JPanel card = UITheme.cardPanel();
-        card.setPreferredSize(new Dimension(520, 180));
-
-        JPanel inner = new JPanel();
-        inner.setBackground(Color.WHITE);
-        inner.setBorder(new EmptyBorder(22, 24, 22, 24));
-        inner.setLayout(new BoxLayout(inner, BoxLayout.Y_AXIS));
-
-        JLabel greet = new JLabel("Welcome, " + user.getUsername());
-        greet.setFont(new Font("SansSerif", Font.PLAIN, 22));
-        greet.setForeground(UITheme.TEXT_DARK);
-        greet.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel sub = new JLabel("Select a module from the menu.");
-        sub.setFont(UITheme.FONT_BODY);
-        sub.setForeground(UITheme.TEXT_MUTED);
-        sub.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        inner.add(greet);
-        inner.add(Box.createVerticalStrut(8));
-        inner.add(sub);
-
-        card.add(inner, BorderLayout.CENTER);
-        wrap.add(card);
-
-        show(wrap);
-    }
-
     private void logout() {
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to logout?",
-                "Logout",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            new AuthenticationService().logout();
+        if (DialogUtil.showConfirmDialog(this, "Are you sure you want to log out?")) {
             SwingUtilities.invokeLater(() -> {
                 new LoginFrame().setVisible(true);
                 dispose();

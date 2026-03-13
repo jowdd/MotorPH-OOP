@@ -1,9 +1,5 @@
 package com.group.motorph.dao.impl;
 
-import com.group.motorph.dao.AttendanceDAO;
-import com.group.motorph.model.AttendanceRecord;
-import com.group.motorph.util.CSVHandler;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.time.LocalDate;
@@ -13,8 +9,14 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.group.motorph.dao.AttendanceDAO;
+import com.group.motorph.model.AttendanceRecord;
+import com.group.motorph.util.CSVHandler;
+
 /**
- * CSV-based implementation of AttendanceDAO.
+ * CSV-based implementation of AttendanceDAO. Reads and writes
+ * attendance-record.csv, maintaining a Status column that tracks whether each
+ * record is Pending, Approved, or Processed.
  */
 public class AttendanceDAOImpl implements AttendanceDAO {
 
@@ -22,9 +24,11 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("H:mm");
 
-    private static final String STATUS_APPROVED = "Approved";
-    private static final String STATUS_PENDING = "Pending";
+    private static final String STATUS_APPROVED  = "Approved";
+    private static final String STATUS_PROCESSED = "Processed";
+    private static final String STATUS_PENDING   = "Pending";
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public AttendanceDAOImpl() {
         CSVHandler.ensureDataDirectory();
         ensureStatusColumn();
@@ -34,18 +38,27 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     public void ensureStatusColumn() {
         try (BufferedReader br = new BufferedReader(new FileReader(ATTENDANCE_FILE))) {
             String header = br.readLine();
-            if (header == null) return;
-            if (header.toLowerCase().contains("status")) return;
+            if (header == null) {
+                return;
+            }
+            if (header.toLowerCase().contains("status")) {
+                return;
+            }
 
-            // rewrite with Status column = Pending
+            // Files shipped without a Status column. Rewrite the full CSV
+            // once so newer workflow states (Pending/Approved/Processed) can be
+            // tracked without breaking old data.
             List<AttendanceRecord> all = readAll();
             List<String[]> rows = new ArrayList<>();
-            for (AttendanceRecord r : all) rows.add(toRow(r, STATUS_PENDING));
+            for (AttendanceRecord r : all) {
+                rows.add(toRow(r, STATUS_PENDING));
+            }
 
             CSVHandler.writeCSV(ATTENDANCE_FILE,
-                    new String[]{"Employee #","Last Name","First Name","Date","Log In","Log Out","Status"},
+                    new String[]{"Employee #", "Last Name", "First Name", "Date", "Log In", "Log Out", "Status"},
                     rows);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
@@ -56,7 +69,11 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     @Override
     public List<AttendanceRecord> getAttendanceByEmployeeId(String employeeId) {
         List<AttendanceRecord> out = new ArrayList<>();
-        for (AttendanceRecord r : readAll()) if (safe(r.getEmployeeId()).equals(employeeId)) out.add(r);
+        for (AttendanceRecord r : readAll()) {
+            if (safe(r.getEmployeeId()).equals(employeeId)) {
+                out.add(r);
+            }
+        }
         return out;
     }
 
@@ -64,7 +81,9 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     public List<AttendanceRecord> getAttendanceByDateRange(LocalDate startDate, LocalDate endDate) {
         List<AttendanceRecord> out = new ArrayList<>();
         for (AttendanceRecord r : readAll()) {
-            if (r.getDate() == null) continue;
+            if (r.getDate() == null) {
+                continue;
+            }
             if ((r.getDate().isEqual(startDate) || r.getDate().isAfter(startDate))
                     && (r.getDate().isEqual(endDate) || r.getDate().isBefore(endDate))) {
                 out.add(r);
@@ -77,8 +96,12 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     public List<AttendanceRecord> getAttendanceByEmployeeAndMonth(String employeeId, int month, int year) {
         List<AttendanceRecord> out = new ArrayList<>();
         for (AttendanceRecord r : readAll()) {
-            if (!safe(r.getEmployeeId()).equals(employeeId) || r.getDate() == null) continue;
-            if (r.getDate().getMonthValue() == month && r.getDate().getYear() == year) out.add(r);
+            if (!safe(r.getEmployeeId()).equals(employeeId) || r.getDate() == null) {
+                continue;
+            }
+            if (r.getDate().getMonthValue() == month && r.getDate().getYear() == year) {
+                out.add(r);
+            }
         }
         return out;
     }
@@ -87,9 +110,16 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     public List<AttendanceRecord> getPendingAttendanceByMonth(int month, int year) {
         List<AttendanceRecord> out = new ArrayList<>();
         for (AttendanceRecord r : readAll()) {
-            if (r.getDate() == null) continue;
+            if (r.getDate() == null) {
+                continue;
+            }
             if (r.getDate().getMonthValue() == month && r.getDate().getYear() == year) {
-                if (!STATUS_APPROVED.equalsIgnoreCase(safe(r.getStatus()).trim())) out.add(r);
+                String status = safe(r.getStatus()).trim();
+                boolean alreadyFinal = STATUS_APPROVED .equalsIgnoreCase(status)
+                                    || STATUS_PROCESSED.equalsIgnoreCase(status);
+                if (!alreadyFinal) {
+                    out.add(r);
+                }
             }
         }
         return out;
@@ -102,7 +132,6 @@ public class AttendanceDAOImpl implements AttendanceDAO {
             CSVHandler.appendToCSV(ATTENDANCE_FILE, toRow(record, defaultStatus(record)));
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }
@@ -116,6 +145,10 @@ public class AttendanceDAOImpl implements AttendanceDAO {
 
         for (AttendanceRecord r : all) {
             if (safe(r.getEmployeeId()).equals(employeeId) && r.getDate() != null && r.getDate().isEqual(oldDate)) {
+
+                // Match by employee ID + original date
+                // If the updated object does not carry a 
+                // preserve the existing workflow state instead of blanking it.
                 String status = safe(updated.getStatus()).trim().isEmpty() ? defaultStatus(r) : updated.getStatus();
                 rows.add(toRow(updated, status));
                 changed = true;
@@ -126,7 +159,7 @@ public class AttendanceDAOImpl implements AttendanceDAO {
 
         if (changed) {
             CSVHandler.writeCSV(ATTENDANCE_FILE,
-                    new String[]{"Employee #","Last Name","First Name","Date","Log In","Log Out","Status"},
+                    new String[]{"Employee #", "Last Name", "First Name", "Date", "Log In", "Log Out", "Status"},
                     rows);
         }
         return changed;
@@ -149,7 +182,7 @@ public class AttendanceDAOImpl implements AttendanceDAO {
 
         if (deleted) {
             CSVHandler.writeCSV(ATTENDANCE_FILE,
-                    new String[]{"Employee #","Last Name","First Name","Date","Log In","Log Out","Status"},
+                    new String[]{"Employee #", "Last Name", "First Name", "Date", "Log In", "Log Out", "Status"},
                     rows);
         }
         return deleted;
@@ -164,8 +197,19 @@ public class AttendanceDAOImpl implements AttendanceDAO {
 
         for (AttendanceRecord r : all) {
             if (r.getDate() != null && r.getDate().getMonthValue() == month && r.getDate().getYear() == year) {
-                if (!STATUS_APPROVED.equalsIgnoreCase(safe(r.getStatus()).trim())) any = true;
-                rows.add(toRow(r, STATUS_APPROVED));
+
+                String status = safe(r.getStatus()).trim();
+
+                // Never downgrade a Processed record back to Approved. Once a row
+                // has been used to generate payroll it becomes immutable
+                if (STATUS_PROCESSED.equalsIgnoreCase(status)) {
+                    rows.add(toRow(r, STATUS_PROCESSED));
+                } else if (!STATUS_APPROVED.equalsIgnoreCase(status)) {
+                    rows.add(toRow(r, STATUS_APPROVED));
+                    any = true;
+                } else {
+                    rows.add(toRow(r, STATUS_APPROVED));
+                }
             } else {
                 rows.add(toRow(r, defaultStatus(r)));
             }
@@ -173,17 +217,64 @@ public class AttendanceDAOImpl implements AttendanceDAO {
 
         if (any) {
             CSVHandler.writeCSV(ATTENDANCE_FILE,
-                    new String[]{"Employee #","Last Name","First Name","Date","Log In","Log Out","Status"},
+                    new String[]{"Employee #", "Last Name", "First Name", "Date", "Log In", "Log Out", "Status"},
                     rows);
         }
         return any;
     }
 
+    @Override
+    public List<AttendanceRecord> getApprovedByMonth(int month, int year) {
+        List<AttendanceRecord> out = new ArrayList<>();
+        for (AttendanceRecord r : readAll()) {
+            if (r.getDate() == null) {
+                continue;
+            }
+            if (r.getDate().getMonthValue() == month && r.getDate().getYear() == year
+                    && STATUS_APPROVED.equalsIgnoreCase(safe(r.getStatus()).trim())) {
+                out.add(r);
+            }
+        }
+        return out;
+    }
+
+    @Override
+    public boolean markAttendanceProcessed(int month, int year) {
+        ensureStatusColumn();
+        List<AttendanceRecord> all = readAll();
+        List<String[]> rows = new ArrayList<>();
+        boolean any = false;
+        for (AttendanceRecord r : all) {
+            if (r.getDate() != null && r.getDate().getMonthValue() == month && r.getDate().getYear() == year
+                    && STATUS_APPROVED.equalsIgnoreCase(safe(r.getStatus()).trim())) {
+
+                // Only Approved rows are eligible to move to Processed. Pending
+                // rows still need finance review, while already processed rows
+                // are left untouched.
+                rows.add(toRow(r, "Processed"));
+                any = true;
+            } else {
+                rows.add(toRow(r, defaultStatus(r)));
+            }
+        }
+        if (any) {
+            CSVHandler.writeCSV(ATTENDANCE_FILE,
+                    new String[]{"Employee #", "Last Name", "First Name", "Date", "Log In", "Log Out", "Status"},
+                    rows);
+        }
+        return any;
+    }
+
+    /**
+     * Reads every attendance row from disk.
+     */
     private List<AttendanceRecord> readAll() {
         List<AttendanceRecord> out = new ArrayList<>();
         List<String[]> data = CSVHandler.readCSV(ATTENDANCE_FILE);
         for (String[] row : data) {
-            if (row.length < 6) continue;
+            if (row.length < 6) {
+                continue;
+            }
 
             String empId = safe(row[0]).trim();
             String last = safe(row[1]).trim();
@@ -193,8 +284,12 @@ public class AttendanceDAOImpl implements AttendanceDAO {
             LocalTime outTime = parseTime(row[5]);
 
             String status = STATUS_PENDING;
-            if (row.length >= 7) status = safe(row[6]).trim();
-            if (status.isEmpty()) status = STATUS_PENDING;
+            if (row.length >= 7) {
+                status = safe(row[6]).trim();
+            }
+            if (status.isEmpty()) {
+                status = STATUS_PENDING;
+            }
 
             out.add(new AttendanceRecord(empId, last, first, date, in, outTime, status));
         }
@@ -203,29 +298,46 @@ public class AttendanceDAOImpl implements AttendanceDAO {
 
     private String[] toRow(AttendanceRecord r, String statusOverride) {
         return new String[]{
-                safe(r.getEmployeeId()),
-                safe(r.getLastName()),
-                safe(r.getFirstName()),
-                formatDate(r.getDate()),
-                formatTime(r.getClockIn()),
-                formatTime(r.getClockOut()),
-                safe(statusOverride).trim().isEmpty() ? defaultStatus(r) : statusOverride
+            safe(r.getEmployeeId()),
+            safe(r.getLastName()),
+            safe(r.getFirstName()),
+            formatDate(r.getDate()),
+            formatTime(r.getClockIn()),
+            formatTime(r.getClockOut()),
+            safe(statusOverride).trim().isEmpty() ? defaultStatus(r) : statusOverride
         };
     }
 
-    private String safe(String v) { return v == null ? "" : v; }
+    /**
+     * Returns the value as-is, or empty string if null.
+     */
+    private String safe(String v) {
+        return v == null ? "" : v;
+    }
 
     private LocalDate parseDate(String s) {
-        try { return LocalDate.parse(s.trim(), DATE_FMT); } catch (DateTimeParseException ex) { return null; }
+        try {
+            return LocalDate.parse(s.trim(), DATE_FMT);
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
     }
 
     private LocalTime parseTime(String s) {
-        try { return LocalTime.parse(s.trim(), TIME_FMT); } catch (DateTimeParseException ex) { return null; }
+        try {
+            return LocalTime.parse(s.trim(), TIME_FMT);
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
     }
 
-    private String formatDate(LocalDate d) { return d == null ? "" : d.format(DATE_FMT); }
+    private String formatDate(LocalDate d) {
+        return d == null ? "" : d.format(DATE_FMT);
+    }
 
-    private String formatTime(LocalTime t) { return t == null ? "" : t.format(TIME_FMT); }
+    private String formatTime(LocalTime t) {
+        return t == null ? "" : t.format(TIME_FMT);
+    }
 
     private String defaultStatus(AttendanceRecord r) {
         String s = safe(r.getStatus()).trim();

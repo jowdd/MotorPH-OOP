@@ -1,5 +1,6 @@
 package com.group.motorph.ui;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -13,7 +14,12 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -30,30 +36,15 @@ import javax.swing.border.EmptyBorder;
 
 import com.group.motorph.model.User;
 import com.group.motorph.service.AuthenticationService;
+import com.group.motorph.ui.components.UITheme;
 
 /**
  * Login window for the MotorPH Payroll System.
- *
- * Updated to match the attached UI design:
- * - centered login card
- * - light gray page background
- * - white rounded panel with soft shadow
- * - title + subtitle hierarchy
- * - clean fields and blue login button
- * - Register / Forgot Password follow the provided design messaging
  */
 public class LoginFrame extends JFrame {
 
-    private static final Color PAGE_BG = new Color(0xECECEC);
-    private static final Color CARD_BG = Color.WHITE;
-    private static final Color TITLE_COLOR = new Color(0x2F3142);
-    private static final Color SUBTITLE_COLOR = new Color(0x4A4A4A);
+    // Field border colour
     private static final Color FIELD_BORDER = new Color(0xD9D9D9);
-    private static final Color FIELD_TEXT = new Color(0x444444);
-    private static final Color LINK_COLOR = new Color(0x7FA6D9);
-    private static final Color PRIMARY_BLUE = new Color(0x1F6FDB);
-    private static final Color ERROR_RED = new Color(0xC0392B);
-    private static final Color SUCCESS_GREEN = new Color(0x2E8B57);
 
     private final HintTextField usernameField = new HintTextField("Username or Email", 18);
     private final HintPasswordField passwordField = new HintPasswordField("Password", 18);
@@ -61,7 +52,7 @@ public class LoginFrame extends JFrame {
     private final AuthenticationService authService = new AuthenticationService();
 
     public LoginFrame() {
-        setTitle("MotorPH Payroll System");
+        setTitle("MotorPH");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1024, 768);
         setMinimumSize(new Dimension(900, 650));
@@ -71,7 +62,7 @@ public class LoginFrame extends JFrame {
 
     private void buildUI() {
         JPanel root = new JPanel(new GridBagLayout());
-        root.setBackground(PAGE_BG);
+        root.setBackground(UITheme.BACKGROUND);
         root.setBorder(new EmptyBorder(40, 40, 40, 40));
 
         RoundedPanel card = new RoundedPanel(28);
@@ -91,14 +82,14 @@ public class LoginFrame extends JFrame {
 
         JLabel title = new JLabel("MotorPH Payroll System", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.PLAIN, 25));
-        title.setForeground(TITLE_COLOR);
+        title.setForeground(UITheme.TEXT_DARK);
         g.gridy = 0;
         g.insets = new Insets(8, 0, 28, 0);
         content.add(title, g);
 
         JLabel subtitle = new JLabel("Sign in to continue", SwingConstants.CENTER);
         subtitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        subtitle.setForeground(SUBTITLE_COLOR);
+        subtitle.setForeground(UITheme.TEXT_MUTED);
         g.gridy = 1;
         g.insets = new Insets(0, 0, 14, 0);
         content.add(subtitle, g);
@@ -135,7 +126,7 @@ public class LoginFrame extends JFrame {
         content.add(loginBtn, g);
 
         messageLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        messageLabel.setForeground(ERROR_RED);
+        messageLabel.setForeground(UITheme.DANGER);
         g.gridy = 6;
         g.insets = new Insets(0, 0, 0, 0);
         content.add(messageLabel, g);
@@ -204,20 +195,56 @@ public class LoginFrame extends JFrame {
     }
 
     private void styleField(JTextField field) {
-        field.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        field.setForeground(FIELD_TEXT);
-        field.setBackground(Color.WHITE);
-        field.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 8));
-        field.setCaretColor(FIELD_TEXT);
+        field.setFont(UITheme.FONT_BODY);
+        field.setForeground(UITheme.TEXT_DARK);
+        field.setOpaque(false);
+        field.setBackground(new Color(0, 0, 0, 0));
+        field.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+        field.setCaretColor(UITheme.TEXT_DARK);
     }
 
     private JPanel wrapFieldWithIcon(JComponent field, String iconText) {
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(Color.WHITE);
-        wrapper.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(FIELD_BORDER, 1, true),
-                new EmptyBorder(0, 10, 0, 10)
-        ));
+        // Rounded wrapper that repaints its border on focus / hover
+        JPanel wrapper = new JPanel(new BorderLayout()) {
+            private Color currentBorder = FIELD_BORDER;
+            {
+                setOpaque(false);
+                // Focus listener on the field drives the blue ring
+                field.addFocusListener(new FocusAdapter() {
+                    @Override public void focusGained(FocusEvent e) { currentBorder = new Color(0x2563EB); repaint(); }
+                    @Override public void focusLost (FocusEvent e) { currentBorder = FIELD_BORDER; repaint(); }
+                });
+
+                // Hover listener on the wrapper
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override public void mouseEntered(java.awt.event.MouseEvent e) {
+                        if (!field.isFocusOwner()) { currentBorder = new Color(0x9CA3AF); repaint(); }
+                    }
+                    @Override public void mouseExited(java.awt.event.MouseEvent e) {
+                        if (!field.isFocusOwner()) { currentBorder = FIELD_BORDER; repaint(); }
+                    }
+                });
+            }
+
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.dispose();
+            }
+
+            @Override protected void paintBorder(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(currentBorder);
+                g2.setStroke(new BasicStroke(1f));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+                g2.dispose();
+            }
+        };
+
+        wrapper.setBorder(new EmptyBorder(0, 10, 0, 10));
         wrapper.setPreferredSize(new Dimension(0, 40));
 
         JLabel icon = new JLabel(iconText);
@@ -230,31 +257,47 @@ public class LoginFrame extends JFrame {
         return wrapper;
     }
 
+    @SuppressWarnings({"rawtypes"})
     private JButton linkButton(String text) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        btn.setForeground(LINK_COLOR);
+        btn.setFont(UITheme.FONT_BODY);
+        btn.setForeground(UITheme.PRIMARY);
+        btn.setBorder(new EmptyBorder(0, 0, 0, 0));
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
         btn.setFocusPainted(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setMargin(new Insets(0, 0, 0, 0));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Hover: underline + darken
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) {
+                Map attrs = new HashMap(btn.getFont().getAttributes());
+                attrs.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+                btn.setFont(btn.getFont().deriveFont(attrs));
+                btn.setForeground(UITheme.PRIMARY_DARK);
+            }
+            @Override public void mouseExited(MouseEvent e) {
+                Map attrs = new HashMap(btn.getFont().getAttributes());
+                attrs.put(TextAttribute.UNDERLINE, -1);
+                btn.setFont(btn.getFont().deriveFont(attrs));
+                btn.setForeground(UITheme.PRIMARY);
+            }
+        });
         return btn;
     }
 
     private void showError(String msg) {
         messageLabel.setText(msg);
-        messageLabel.setForeground(ERROR_RED);
+        messageLabel.setForeground(UITheme.DANGER);
     }
 
     private void showSuccess(String msg) {
         messageLabel.setText(msg);
-        messageLabel.setForeground(SUCCESS_GREEN);
+        messageLabel.setForeground(UITheme.SUCCESS);
     }
 
-    /**
-     * Rounded white card.
-     */
+    // Rounded white card.
     private static class RoundedPanel extends JPanel {
 
         private final int radius;
@@ -271,7 +314,7 @@ public class LoginFrame extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
-            g2.setColor(CARD_BG);
+            g2.setColor(UITheme.PANEL_BG);
             g2.fillRoundRect(
                     0,
                     0,
@@ -285,17 +328,16 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    /**
-     * Modern rounded blue button.
-     */
+    // Rounded blue button.
     private static class RoundedButton extends JButton {
         RoundedButton(String text) {
             super(text);
             setForeground(Color.WHITE);
-            setFont(new Font("SansSerif", Font.PLAIN, 13));
+            setFont(UITheme.FONT_BODY);
             setBorder(new EmptyBorder(10, 18, 10, 18));
             setContentAreaFilled(false);
             setFocusPainted(false);
+            setRolloverEnabled(true);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         }
 
@@ -305,8 +347,8 @@ public class LoginFrame extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             Color fill = getModel().isPressed()
-                    ? PRIMARY_BLUE.darker()
-                    : (getModel().isRollover() ? PRIMARY_BLUE.brighter() : PRIMARY_BLUE);
+                    ? UITheme.PRIMARY_DARK.darker()
+                    : (getModel().isRollover() ? UITheme.PRIMARY_DARK : UITheme.PRIMARY);
 
             g2.setColor(fill);
             g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 8, 8));
@@ -321,16 +363,12 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    /**
-     * Text field with placeholder support.
-     */
+    // Text field with placeholder support.
     private static class HintTextField extends JTextField {
-        private final String hint;
         private boolean showingHint = true;
 
         HintTextField(String hint, int columns) {
             super(hint, columns);
-            this.hint = hint;
             setForeground(new Color(0x9A9A9A));
 
             addFocusListener(new FocusAdapter() {
@@ -338,7 +376,7 @@ public class LoginFrame extends JFrame {
                 public void focusGained(FocusEvent e) {
                     if (showingHint) {
                         setText("");
-                        setForeground(FIELD_TEXT);
+                        setForeground(UITheme.TEXT_DARK);
                         showingHint = false;
                     }
                 }
@@ -359,9 +397,7 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    /**
-     * Password field with placeholder support.
-     */
+    // Password field with placeholder support.
     private static class HintPasswordField extends JPasswordField {
         private final String hint;
         private boolean showingHint = true;
@@ -377,7 +413,7 @@ public class LoginFrame extends JFrame {
             setText(hint);
             setForeground(PLACEHOLDER_FG);
             setEchoChar((char) 0);
-            setCaretColor(CARET_HIDDEN);
+            setCaretColor(CARET_HIDDEN); // no caret while placeholder is visible
 
             addFocusListener(new FocusAdapter() {
                 @Override
@@ -395,8 +431,7 @@ public class LoginFrame extends JFrame {
                 }
             });
 
-            // Handle the case where the field already has focus when the placeholder
-            // is being shown
+            // Handle the case where the field already has focus when the placeholder is being shown
             addKeyListener(new java.awt.event.KeyAdapter() {
                 @Override
                 public void keyTyped(java.awt.event.KeyEvent e) {
@@ -406,7 +441,7 @@ public class LoginFrame extends JFrame {
                 }
             });
 
-            // Also handle a direct mouse click when the field already owns focus
+            // Handle a direct mouse click
             addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mousePressed(java.awt.event.MouseEvent e) {
@@ -420,9 +455,9 @@ public class LoginFrame extends JFrame {
         // Switch from placeholder state to real-input state.
         private void activateRealInput() {
             setText("");
-            setForeground(FIELD_TEXT);
+            setForeground(UITheme.TEXT_DARK);
             setEchoChar(defaultEcho);
-            setCaretColor(FIELD_TEXT); // caret visible while typing
+            setCaretColor(UITheme.TEXT_DARK);
             showingHint = false;
         }
 

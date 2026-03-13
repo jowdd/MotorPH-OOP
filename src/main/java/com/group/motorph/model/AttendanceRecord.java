@@ -9,6 +9,7 @@ import java.time.LocalTime;
  * CSV-first model: fields map directly to attendance-record.csv columns.
  */
 public class AttendanceRecord {
+
     private String employeeId;
     private String lastName;
     private String firstName;
@@ -17,13 +18,16 @@ public class AttendanceRecord {
     private LocalTime clockIn;
     private LocalTime clockOut;
 
-    /** Values: "Pending" (default) or "Approved". */
+    /**
+     * Values: "Pending" (default) or "Approved".
+     */
     private String status;
 
-    public AttendanceRecord() {}
+    public AttendanceRecord() {
+    }
 
     public AttendanceRecord(String employeeId, String lastName, String firstName,
-                            LocalDate date, LocalTime clockIn, LocalTime clockOut, String status) {
+            LocalDate date, LocalTime clockIn, LocalTime clockOut, String status) {
         this.employeeId = employeeId;
         this.lastName = lastName;
         this.firstName = firstName;
@@ -38,26 +42,61 @@ public class AttendanceRecord {
         this(employeeId, "", "", date, clockIn, clockOut, "Pending");
     }
 
-    public String getEmployeeId() { return employeeId; }
-    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+    public String getEmployeeId() {
+        return employeeId;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() {
+        return lastName;
+    }
 
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-    public LocalTime getClockIn() { return clockIn; }
-    public void setClockIn(LocalTime clockIn) { this.clockIn = clockIn; }
+    public String getFirstName() {
+        return firstName;
+    }
 
-    public LocalTime getClockOut() { return clockOut; }
-    public void setClockOut(LocalTime clockOut) { this.clockOut = clockOut; }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalTime getClockIn() {
+        return clockIn;
+    }
+
+    public void setClockIn(LocalTime clockIn) {
+        this.clockIn = clockIn;
+    }
+
+    public LocalTime getClockOut() {
+        return clockOut;
+    }
+
+    public void setClockOut(LocalTime clockOut) {
+        this.clockOut = clockOut;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getFullName() {
         String ln = lastName == null ? "" : lastName.trim();
