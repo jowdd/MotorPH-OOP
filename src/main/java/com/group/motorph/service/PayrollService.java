@@ -73,113 +73,116 @@ public class PayrollService {
 
     // Calculate SSS contribution
     private double calculateSSS(double grossPay) {
-        if (grossPay <= 4250) {
+        if (grossPay < 3250) {
+            return 135.00;
+        } else if (grossPay < 3750) {
+            return 157.50;
+        } else if (grossPay < 4250) {
             return 180.00;
-        }
-        if (grossPay <= 4750) {
+        } else if (grossPay < 4750) {
             return 202.50;
-        }
-        if (grossPay <= 5250) {
+        } else if (grossPay < 5250) {
             return 225.00;
-        }
-        if (grossPay <= 5750) {
+        } else if (grossPay < 5750) {
             return 247.50;
-        }
-        if (grossPay <= 6250) {
+        } else if (grossPay < 6250) {
             return 270.00;
-        }
-        if (grossPay <= 6750) {
+        } else if (grossPay < 6750) {
             return 292.50;
-        }
-        if (grossPay <= 7250) {
+        } else if (grossPay < 7250) {
             return 315.00;
-        }
-        if (grossPay <= 7750) {
+        } else if (grossPay < 7750) {
             return 337.50;
-        }
-        if (grossPay <= 8250) {
+        } else if (grossPay < 8250) {
             return 360.00;
-        }
-        if (grossPay <= 8750) {
+        } else if (grossPay < 8750) {
             return 382.50;
-        }
-        if (grossPay <= 9250) {
+        } else if (grossPay < 9250) {
             return 405.00;
-        }
-        if (grossPay <= 9750) {
+        } else if (grossPay < 9750) {
             return 427.50;
-        }
-        if (grossPay <= 10250) {
+        } else if (grossPay < 10250) {
             return 450.00;
-        }
-        if (grossPay <= 10750) {
+        } else if (grossPay < 10750) {
             return 472.50;
-        }
-        if (grossPay <= 11250) {
+        } else if (grossPay < 11250) {
             return 495.00;
-        }
-        if (grossPay <= 11750) {
+        } else if (grossPay < 11750) {
             return 517.50;
-        }
-        if (grossPay <= 12250) {
+        } else if (grossPay < 12250) {
             return 540.00;
-        }
-        if (grossPay <= 12750) {
+        } else if (grossPay < 12750) {
             return 562.50;
-        }
-        if (grossPay <= 13250) {
+        } else if (grossPay < 13250) {
             return 585.00;
-        }
-        if (grossPay <= 13750) {
+        } else if (grossPay < 13750) {
             return 607.50;
-        }
-        if (grossPay <= 14250) {
+        } else if (grossPay < 14250) {
             return 630.00;
-        }
-        if (grossPay <= 14750) {
+        } else if (grossPay < 14750) {
             return 652.50;
-        }
-        if (grossPay <= 15250) {
+        } else if (grossPay < 15250) {
             return 675.00;
-        }
-        if (grossPay <= 15750) {
+        } else if (grossPay < 15750) {
             return 697.50;
-        }
-        if (grossPay <= 16250) {
+        } else if (grossPay < 16250) {
             return 720.00;
-        }
-        if (grossPay <= 16750) {
+        } else if (grossPay < 16750) {
             return 742.50;
-        }
-        if (grossPay <= 17250) {
+        } else if (grossPay < 17250) {
             return 765.00;
-        }
-        if (grossPay <= 17750) {
+        } else if (grossPay < 17750) {
             return 787.50;
-        }
-        if (grossPay <= 18250) {
+        } else if (grossPay < 18250) {
             return 810.00;
-        }
-        if (grossPay <= 18750) {
+        } else if (grossPay < 18750) {
             return 832.50;
-        }
-        if (grossPay <= 19250) {
+        } else if (grossPay < 19250) {
             return 855.00;
-        }
-        if (grossPay <= 19750) {
+        } else if (grossPay < 19750) {
             return 877.50;
+        } else if (grossPay < 20250) {
+            return 900.00;
+        } else if (grossPay < 20750) {
+            return 922.50;
+        } else if (grossPay < 21250) {
+            return 945.00;
+        } else if (grossPay < 21750) {
+            return 967.50;
+        } else if (grossPay < 22250) {
+            return 990.00;
+        } else if (grossPay < 22750) {
+            return 1012.50;
+        } else if (grossPay < 23250) {
+            return 1035.00;
+        } else if (grossPay < 23750) {
+            return 1057.50;
+        } else if (grossPay < 24250) {
+            return 1080.00;
+        } else if (grossPay < 24750) {
+            return 1102.50;
+        } else {
+            return 1125.00;
         }
-        return 900.00;  // Maximum
     }
 
-    // Employee share: 2.5% of gross pay, capped at PHP 5,000
+    // Employee share: 50% of 3% premium, capped at 1,800 monthly premium
     private double calculatePhilHealth(double grossPay) {
-        return Math.min(grossPay * 0.05 / 2, 5000.00);
+        double salaryBase = Math.max(grossPay, 10000.00); // minimum salary bracket
+        double premium = salaryBase * 0.03;               // 3% premium
+        premium = Math.min(premium, 1800.00);             // cap at 1,800
+
+        return premium / 2; // employee share (50%)
     }
 
     // 1% for monthly wages <= PHP 1,500; 2% above that.
     private double calculatePagIbig(double grossPay) {
-        return grossPay * (grossPay <= 1500 ? 0.01 : 0.02);
+        if (grossPay >= 1000 && grossPay <= 1500) {
+            return grossPay * 0.01; // 1%
+        } else if (grossPay > 1500) {
+            return grossPay * 0.02; // 2%
+        }
+        return 0;
     }
 
     /**
@@ -191,23 +194,27 @@ public class PayrollService {
      * monthly payslip without depending on an external tax table file.
      */
     private double calculateWithholdingTax(double grossPay, double sss, double philHealth, double pagIbig) {
+        
         double taxable = grossPay - sss - philHealth - pagIbig;
-        if (taxable <= 20833) {
+
+        if (taxable <= 20832) {
             return 0;
+        } 
+        else if (taxable < 33333) {
+            return (taxable - 20833) * 0.20;
+        } 
+        else if (taxable < 66667) {
+            return 2500 + (taxable - 33333) * 0.25;
+        } 
+        else if (taxable < 166667) {
+            return 10833 + (taxable - 66667) * 0.30;
+        } 
+        else if (taxable < 666667) {
+            return 40833.33 + (taxable - 166667) * 0.32;
+        } 
+        else {
+            return 200833.33 + (taxable - 666667) * 0.35;
         }
-        if (taxable <= 33332) {
-            return (taxable - 20833) * 0.15;
-        }
-        if (taxable <= 66666) {
-            return 1875 + (taxable - 33332) * 0.20;
-        }
-        if (taxable <= 166666) {
-            return 8541.80 + (taxable - 66666) * 0.25;
-        }
-        if (taxable <= 666666) {
-            return 33541.80 + (taxable - 166666) * 0.30;
-        }
-        return 183541.80 + (taxable - 666666) * 0.35;
     }
 
     /**
